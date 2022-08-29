@@ -1,0 +1,35 @@
+.pagBtn {
+  width: 64px;
+  height: 64px;
+  border: 1px solid #c93d63;
+  color: #c93d63;
+  background: none;
+  border-radius: 6px;
+  margin: 8px;
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 22px;
+}
+
+.pagBtn.active {
+  color: #ffffff;
+  background: linear-gradient(267.94deg, #c93d63 0%, #c93d80 100%);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@media only screen and (max-width: 560px) {
+  .pagination {
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .pagBtn {
+    width: 36px;
+    height: 36px;
+    margin: 4px;
+  }
+}
