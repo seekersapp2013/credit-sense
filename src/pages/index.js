@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import {
   CCard,
@@ -12,84 +12,58 @@ import {
   CTableRow,
 } from '@coreui/react'
 import { CChartBar, CChartLine, CChartPie } from '@coreui/react-chartjs'
-import { appwrite, objectifySubStrings } from 'src/functions/appwrite'
-import { getMonthsArray, totalCols } from 'src/functions/calculations'
+import { getMonthsArray } from 'src/functions/calculations'
 import { formatMoney } from 'src/components/Utils/formatMoney'
-import { chartsAndKPIs } from 'src/functions/calculations/Charts'
 import { monthNamesArray } from 'src/components/monthNamesArray'
 import Loader from 'src/components/Loader'
 import WalletCards from 'src/components/WalletCards'
-import { payroll, totalPayroll } from 'src/functions/calculations/SG&A/payroll'
-import {
-  getDataSetForPieChart,
-  pieChart,
-  SGAndA,
-  total,
-} from 'src/functions/calculations/Charts/useOfFundsFor18Months'
-import { getCOGSTotals } from 'src/functions/calculations/COGS'
-import { totalAdvisoryAndProf } from 'src/functions/calculations/SG&A/advisoryAndProfServices'
-import { totalRentExpenses } from 'src/functions/calculations/SG&A/rent'
-import { totalTechSupportAndServicesExpenses } from 'src/functions/calculations/SG&A/techSupportAndServices'
-import { totalInsuranceExpenses } from 'src/functions/calculations/SG&A/insurance'
-import { totalUtilitiesExpenses } from 'src/functions/calculations/SG&A/utilities'
-import { totalOtherExpenses } from 'src/functions/calculations/SG&A/otherExpenses'
-import { totalMarketingAndGrowth } from 'src/functions/calculations/SG&A/marketingAndGrowth'
 import { useRouter } from 'next/router'
-import AccountContext from 'src/components/AccountContext'
+import { api } from 'src/functions/api'
 
-const Home = () => {
+const Dashboard = () => {
   const router = useRouter()
 
-  const { account, profile: data, plan } = useContext(AccountContext)
+  // const [loading, setLoading] = useState(true)
 
-  console.log(data);
-
-  // const [account, setAccount] = useState(null)
-  // const [plan, setPlan] = useState(null)
+  // const [profile, setProfile] = useState(null)
   // const [data, setData] = useState(null)
 
-  // const getAccountInfo = async () => {
-  //   const res = await appwrite.getAccount()
+  router.replace("/dashboard");
 
-  //   setAccount(res)
+  return <div>Loading...</div>
 
-  //   console.log('Account: ', res)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    api
+      .get('/data/charts-and-kpis')
+      .then((result) => {
+        if (result.success) {
+          const {
+            data: { data, profile },
+          } = result
 
-  //   try {
-  //     const user = await appwrite.fetchUser(res.$id)
-  //     console.log('User', objectifySubStrings(user))
-  //     setData({ ...objectifySubStrings(user), user: res.$id })
-  //   } catch (error) {
-  //     console.log(error)
-  //     router.push('/profile')
-  //   }
+          console.log('profile ', profile)
+          console.log('data ', data)
 
-  //   try {
-  //     const plan = await appwrite.fetchPlan()
-  //     console.log('Plan', objectifySubStrings(plan))
-  //     setPlan(objectifySubStrings(plan))
-  //   } catch (error) {
-  //     console.log(error)
-  //     router.push('/select-a-plan')
-  //   }
-  // }
-
-  // // eslint-disable-next-line react-hooks/exhaustive-deps
-  // useEffect(() => getAccountInfo(), [])
-
-  if (!account || !plan || !data) {
-    return <Loader />
-  }
+          setProfile(profile)
+          setData(data)
+        }
+      })
+      .catch((error) => console.log(error))
+      .finally(() => setLoading(false))
+  }, [])
 
   return (
     <>
-      <WalletCards account={account} plan={plan} />
+      <WalletCards />
       {/* <div>{JSON.stringify(data.team.filter(({ category }) => category === 'Growth'))}</div> */}
-      {data ? (
+      {loading ? (
+        <Loader />
+      ) : data && profile ? (
         <CRow>
           <CCol sm={12} xl={4}>
             <CCard className="mb-4">
-              <CCardHeader>{data.company_name}</CCardHeader>
+              <CCardHeader>{profile.company_name}</CCardHeader>
               <CCardBody>
                 <h4>Charts {'&'} KPIs</h4>
                 <p>June 7, 2022</p>
@@ -100,13 +74,13 @@ const Home = () => {
                     <CTableRow>
                       <CTableDataCell>Capital Required</CTableDataCell>
                       <CTableDataCell className="text-center">
-                        {formatMoney(chartsAndKPIs.capitalRequired(data), false, false)}
+                        {formatMoney(data.capitalRequired, false, false)}
                       </CTableDataCell>
                     </CTableRow>
                     <CTableRow>
                       <CTableDataCell>Months to reach profitability</CTableDataCell>
                       <CTableDataCell className="text-center">
-                        {chartsAndKPIs.monthsToProfitability(data)}
+                        {data.monthsToProfitability}
                       </CTableDataCell>
                     </CTableRow>
                   </CTableBody>
@@ -120,28 +94,28 @@ const Home = () => {
               <CCardBody>
                 <CChartBar
                   data={{
-                    labels: getMonthsArray(data.model_start_date).map(
+                    labels: getMonthsArray(profile.model_start_date).map(
                       (date) => `${monthNamesArray[date.getMonth()]}-${date.getFullYear()}`,
                     ),
                     datasets: [
                       {
                         label: 'Revenue',
-                        data: chartsAndKPIs.pAndLBarChart.revenue(data),
+                        data: data.pAndLBarChart.revenue,
                         backgroundColor: '#64D8C2',
                       },
                       {
                         label: 'COGS',
-                        data: chartsAndKPIs.pAndLBarChart.COGS(data),
+                        data: data.pAndLBarChart.COGS,
                         backgroundColor: '#FF506F',
                       },
                       {
                         label: 'SG&A',
-                        data: chartsAndKPIs.pAndLBarChart.SGAndA(data),
+                        data: data.pAndLBarChart.SGAndA,
                         backgroundColor: '#00B0F0',
                       },
                       {
                         label: 'CAPEX',
-                        data: chartsAndKPIs.pAndLBarChart.CAPEX(data),
+                        data: data.pAndLBarChart.CAPEX,
                         backgroundColor: '#F9BE61',
                       },
                     ],
@@ -167,10 +141,10 @@ const Home = () => {
               <CCardBody>
                 <CChartPie
                   data={{
-                    labels: chartsAndKPIs.pieChart(data).labels,
+                    labels: data.pieChart.labels,
                     datasets: [
                       {
-                        data: chartsAndKPIs.pieChart(data).data,
+                        data: data.pieChart.data,
                         backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#8064A2'],
                         hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#8064A2'],
                       },
@@ -186,7 +160,7 @@ const Home = () => {
               <CCardBody>
                 <CChartLine
                   data={{
-                    labels: getMonthsArray(data.model_start_date).map(
+                    labels: getMonthsArray(profile.model_start_date).map(
                       (date) => `${monthNamesArray[date.getMonth()]}-${date.getFullYear()}`,
                     ),
                     datasets: [
@@ -196,7 +170,7 @@ const Home = () => {
                         borderColor: '#64D8C2',
                         pointBackgroundColor: '#64D8C2',
                         pointBorderColor: '#fff',
-                        data: chartsAndKPIs.cashInTheBank(data),
+                        data: data.cashInTheBank,
                       },
                     ],
                   }}
@@ -206,12 +180,12 @@ const Home = () => {
           </CCol>
         </CRow>
       ) : (
-        <Loader />
+       
+        <div>An Error Occured</div>
+
       )}
     </>
   )
 }
 
-// Home.noLayout = true
-
-export default Home
+export default Dashboard

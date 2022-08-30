@@ -22,7 +22,20 @@ const ProfileSalesStep = ({ data, setData }) => {
       <CRow>
         <CCol xs>
           <CCard className="mb-4">
-            <CCardHeader>General</CCardHeader>
+            <CCardHeader>
+              <CRow>
+                <CCol sm={6}>General</CCol>
+                <CCol sm={6} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <CFormSwitch
+                    id="self_service_subscriptions"
+                    checked={data.self_service_subscriptions}
+                    onChange={(e) =>
+                      setData({ ...data, self_service_subscriptions: e.target.checked })
+                    }
+                  />
+                </CCol>
+              </CRow>
+            </CCardHeader>
             <CCardBody>
               <CForm className="row gx-3 gy-2 align-items-center">
                 <CCol sm={6}>
@@ -55,7 +68,20 @@ const ProfileSalesStep = ({ data, setData }) => {
       <CRow>
         <CCol xs>
           <CCard className="mb-4">
-            <CCardHeader>Organic Website Traffic</CCardHeader>
+            <CCardHeader>
+              <CRow>
+                <CCol sm={6}>Organic Website / Online Store Traffic</CCol>
+                <CCol sm={6} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <CFormSwitch
+                    id="self_service_subscriptions"
+                    checked={data.self_service_subscriptions}
+                    onChange={(e) =>
+                      setData({ ...data, self_service_subscriptions: e.target.checked })
+                    }
+                  />
+                </CCol>
+              </CRow>
+            </CCardHeader>
             <CCardBody>
               <CForm className="row gx-3 gy-2 align-items-center">
                 <CCol sm={12}>
@@ -128,7 +154,7 @@ const ProfileSalesStep = ({ data, setData }) => {
 
                 <CCol sm={12}>
                   <small>
-                    <b>Website Traffic</b>
+                    <b>Website / Online Store Traffic</b>
                   </small>
                 </CCol>
 
